@@ -85,34 +85,6 @@ it takes a list of configurations
 (defmethod customize-instance ((buffer buffer) &key)
   (nyxt/emacs-mode:emacs-mode :buffer buffer))
 
-;;; Status buffer is the strip above the message buffer/echo area.
-;;; Modeline in Emacs parlance.
-;; (define-configuration status-buffer
-;;     (;; Disable status buffer since I don't really need it
-;;      (height 0)
-;;      (style (str:concat
-;;            %slot-default%
-;;            (cl-css:css
-;;             ;; Arrows on the left.
-;;             '(("#controls"
-;;                :border-top "1px solid white"
-;;                :background-color "#747474")
-;;               ;; To the right of the arrows.
-;;               ("#url"
-;;                :background-color "black"
-;;                :color "white"
-;;                :border-top "1px solid white")
-;;               ;; Far to the right.
-;;               ("#modes"
-;;                :background-color "black"
-;;                :border-top "1px solid white")
-;;               ;; The center segment.
-;;               ("#tabs"
-;;                :background-color "#747474"
-;;                :color "black"
-;;                :border-top "1px solid white")))))
-;;      ))
-
 ;;; Dark is a simple mode for simple HTML pages to color those in a
 ;;; darker palette. I don't like the default gray-ish colors,
 ;;; though. Thus, I'm overriding those to be a bit more laconia-like.
@@ -126,29 +98,6 @@ it takes a list of configurations
                 :background-color "black !important"
                 :background-image "none !important"
                 :color "#7D8FA3 !important"))))))
-
-
-;;; Internal (i.e. help, info, describe-* buffers). Usually work for
-;;; simple HTML display, so I'm overriding lots of things there.
-;;;
-;;; Panel buffers are the same in regards to style.
-;; (define-configuration (internal-buffer panel-buffer)
-;;   ((style
-;;     (str:concat
-;;      %slot-default%
-;;      (cl-css:css
-;;       '((title
-;;          :color "#CD5C5C")
-;;         (body
-;;          :background-color "black"
-;;          :color "lightgray")
-;;         (hr
-;;          :color "darkgray")
-;;         (a
-;;          :color "#7D8FA3")
-;;         (.button
-;;          :color "lightgray"
-;;          :background-color "#7D8FA3")))))))
 
 ;;; Modules
 (load "~/.cache/quicklisp/setup.lisp")
@@ -188,18 +137,6 @@ the given BUFFER's current url."
                                            ;; "&body=""$QUTE_SELECTED_TEXT"
                                            )))))
 
-;; (theme:themed-css (make-instance 'theme:theme
-;;                             :dark-p t
-;;                             :text-color "red"
-;;                             :accent-color "blue"
-;;                             :font-family "monospace")
-;;            (|h1,h2,h3,h4,h5,h6|
-;;             :border-style "solid"
-;;             :border-width "1px"
-;;             :border-color theme:tertiary)
-;;            (p
-;;             :color (if (theme:dark-p theme:theme) theme:accent theme:secondary)
-;;             :background-color theme:text))
 (setf (uiop:getenv "GTK_THEME") "Adwaita:dark")
 
 (define-configuration browser
@@ -214,8 +151,7 @@ the given BUFFER's current url."
               :primary-color "#7D8FA3"
               :secondary-color "#8fafd7"
               :tertiary-color "#7D8FA3"
-              :quaternary-color "#000000"
-              ))))
+              :quaternary-color "#000000"))))
 
 #+nyxt-3
 (nyxt::define-panel-global hsplit (&key (buffer (id (current-buffer))))
@@ -243,19 +179,6 @@ A poor man's hsplit :)"
       (close-all-panels)
       (hsplit-panel)))
 
-(defun prompter::return-selection (prompter &optional (action (prompter:default-action prompter)))
-  "Call action over selection and send the results to PROMPTER's `result-channel'.
-The selection is the collection of marked suggestions across all sources.
-If there is no marked suggestion, send the currently selected suggestion
-instead."
-  (unless action
-    (setf action #'identity))
-  (setf (prompter:returned-p prompter) t)
-  (prompter::add-input-to-history prompter)
-  (alexandria:when-let ((selection-values (prompter::resolve-selection prompter)))
-    (let ((action-result (funcall action selection-values)))
-      (calispel:! (prompter:result-channel prompter) action-result)))
-  (prompter:destroy prompter))
 (define-configuration nyxt/style-mode:dark-mode
   ((style #.(cl-css:css
              '((*
@@ -264,8 +187,6 @@ instead."
                 :color "white")
                (a
                 :background-color "black !important"
-                :background-image "none !important"
-                ;; :color "#556B2F !important"
-                ))))))
+                :background-image "none !important"))))))
 
 (asdf:load-system :hermes)
