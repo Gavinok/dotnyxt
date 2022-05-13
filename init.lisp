@@ -153,29 +153,29 @@ the given BUFFER's current url."
 (setf (uiop:getenv "GTK_THEME") "Adwaita:dark")
 
 (define-configuration browser
-    ((session-restore-prompt :always-restore)
-      (nyxt/web-mode:hints-alphabet "DSJKHLFAGNMXCWEIO")
-      (theme (make-instance
-              'theme:theme
-              :dark-p t
-              :background-color "#000000"
-              :text-color "#CDCDCD"
-              :accent-color "#7D8FA3"
-              :primary-color "#7D8FA3"
-              :secondary-color "#8fafd7"
-              :tertiary-color "#7D8FA3"
-              :quaternary-color "#000000"))))
+  ((session-restore-prompt :always-restore)
+   (nyxt/web-mode:hints-alphabet "DSJKHLFAGNMXCWEIO")
+   (theme (make-instance
+           'theme:theme
+           :dark-p t
+           :background-color "#000000"
+           :text-color "#CDCDCD"
+           :accent-color "#7D8FA3"
+           :primary-color "#7D8FA3"
+           :secondary-color "#8fafd7"
+           :tertiary-color "#7D8FA3"
+           :quaternary-color "#000000"))))
 
 #+nyxt-3
 (nyxt::define-panel-global hsplit (&key (buffer (id (current-buffer))))
-    (panel "Duplicate panel" :right)
-  "Duplicate the current buffer URL in the panel buffer on the right.
+                           (panel "Duplicate panel" :right)
+                           "Duplicate the current buffer URL in the panel buffer on the right.
 A poor man's hsplit :)"
-  (progn
-    (ffi-window-set-panel-buffer-width (current-window) panel 750)
-    (run-thread "URL loader"
-      (buffer-load (url (nyxt::buffers-get buffer)) :buffer panel))
-    ""))
+                           (progn
+                             (ffi-window-set-panel-buffer-width (current-window) panel 750)
+                             (run-thread "URL loader"
+                                         (buffer-load (url (nyxt::buffers-get buffer)) :buffer panel))
+                             ""))
 
 #+nyxt-3
 (define-command-global close-all-panels ()
@@ -190,7 +190,7 @@ A poor man's hsplit :)"
   "Based on `hsplit-panel' above."
   (if (panel-buffers-right (current-window))
       (close-all-panels)
-      (hsplit-panel)))
+    (hsplit-panel)))
 
 (define-configuration nyxt/style-mode:dark-mode
   ((style #.(cl-css:css
