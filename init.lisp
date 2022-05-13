@@ -138,7 +138,7 @@ this command."
 the given BUFFER's current url."
   (let ((url (render-url (nyxt:url buffer)))
         (title (title buffer)))
-    (uiop:launch-program (list "xdg-open"
+    (uiop:launch-program (list nyxt:*open-program*
                                (str:concat "org-protocol://" protocol "?"
                                            "url=" url
                                            "&title=" title
