@@ -45,6 +45,8 @@ it takes a list of configurations
        "C-f"            'nyxt/web-mode:history-forwards-maybe-query
        "C-i"            'nyxt/input-edit-mode:input-edit-mode
        "M-:"            'eval-expression
+       "M-s M-l"        'search-buffer
+       "M-s M-L"        'search-buffers
        "M-x"            'execute-command
        "M-g M-v"        'hint-mpv
        "M-V"            'youtube-play-current-page
@@ -58,7 +60,18 @@ it takes a list of configurations
        "C-d"            'nyxt/input-edit-mode:delete-forwards
        "M-d"            'nyxt/input-edit-mode:delete-forwards-word
        "M-`"            'hsplit
-       )))))
+       )))
+    (nyxt/web-mode::box-style (theme:themed-css (theme *browser*)
+                  (".nyxt-hint"
+                   :background-color theme:primary
+                   :opacity 1
+                   :color "white"
+                   :font-weight "bold"
+                   :padding "0px 3px 0px 3px"
+                   :border-radius "1px"
+                   ;; :z-index #.(1- (expt 2 31))
+                   :box-shadow "rgb(38, 57, 77) 0px 20px 30px -10px"))
+              :documentation "The style of the boxes, e.g. link hints.")))
 
 (define-configuration browser
   (;; This is for Nyxt to never prompt me about restoring the previous session.
