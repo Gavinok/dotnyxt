@@ -29,44 +29,51 @@
 buffer is a class that all interfaces will inharet from
 it takes a list of configurations
 |#
+;; overflow : hidden for status css
+(define-configuration prompt-buffer
+  ((keymap-scheme-name scheme:emacs)))
 
 (define-configuration nyxt/web-mode:web-mode
-  ((nyxt/web-mode::keymap-scheme
-    (nyxt::define-scheme (:name-prefix "web" :import %slot-default%)
-                         scheme:emacs
-                         (list
-                          "C-c p"          'copy-password
-                          "C-c y"          'autofill
-                          "C-f"            'nyxt/web-mode:history-forwards-maybe-query
-                          "C-i"            'nyxt/input-edit-mode:input-edit-mode
-                          "M-:"            'eval-expression
-                          "M-s M-l"        'search-buffer
-                          "M-s M-L"        'search-buffers
-                          "M-x"            'execute-command
-                          "M-g M-v"        'hint-mpv
-                          "M-V"            'youtube-play-current-page
-                          "C-c l"          'org-protocal
-                          "C-x M-s"        'start-slynk
-                          "C-w"            'nyxt/input-edit-mode:delete-backwards-word
-                          "C-f"            'nyxt/input-edit-mode:cursor-forwards
-                          "C-b"            'nyxt/input-edit-mode:cursor-backwards
-                          "M-f"            'nyxt/input-edit-mode:cursor-forwards-word
-                          "M-b"            'nyxt/input-edit-mode:cursor-backwards-word
-                          "C-d"            'nyxt/input-edit-mode:delete-forwards
-                          "M-d"            'nyxt/input-edit-mode:delete-forwards-word
-                          "M-`"            'hsplit
-                          )))
-   (nyxt/web-mode::box-style (theme:themed-css (theme *browser*)
-                                               (".nyxt-hint"
-                                                :background-color theme:primary
-                                                :opacity 1
-                                                :color "white"
-                                                :font-weight "bold"
-                                                :padding "0px 3px 0px 3px"
-                                                :border-radius "1px"
-                                                ;; :z-index #.(1- (expt 2 31))
-                                                :box-shadow "rgb(38, 57, 77) 0px 20px 30px -10px"))
-                             :documentation "The style of the boxes, e.g. link hints.")))
+  ((keymap-scheme
+    (define-scheme (:name-prefix "web" :import %slot-default%)
+      scheme:emacs
+      (list
+       "C-c u"    'copy-username
+       "C-c p"    'copy-password
+       "C-c y"    'autofill
+       "C-f"      'nyxt/web-mode:history-forwards-maybe-query
+       "C-i"      'nyxt/input-edit-mode:input-edit-mode
+       "M-:"      'eval-expression
+       "M-s M-l"  'search-buffer
+       "M-s M-L"  'search-buffers
+       "M-x"      'execute-command
+       "M-g M-v"  'hint-mpv
+       "M-V"      'youtube-play-current-page
+       "C-c l"    'org-protocal
+       "C-x M-s"  'start-slynk
+       "M-`"      'hsplit
+       "C-w"      'nyxt/input-edit-mode:delete-backwards-word
+       "C-f"      'nyxt/input-edit-mode:cursor-forwards
+       "C-b"      'nyxt/input-edit-mode:cursor-backwards
+       "M-f"      'nyxt/input-edit-mode:cursor-forwards-word
+       "M-b"      'nyxt/input-edit-mode:cursor-backwards-word
+       "C-d"      'nyxt/input-edit-mode:delete-forwards
+       "M-d"      'nyxt/input-edit-mode:delete-forwards-word
+       )))
+   (nyxt/web-mode::box-style
+    (theme:themed-css (theme *browser*)
+                      ;; More consistent and in my opinion better looking hints
+                      (".nyxt-hint"
+                       :background-color theme:background
+                       :border-style solid
+                       :font-size "10pt"
+                       :border-color theme:accent
+                       :border-width "thin"
+                       :color theme:primary
+                       :opacity 1
+                       :color "white"
+                       :padding "2px 2px 2px 2px"
+                       :border-radius "2px")))))
 
 (define-configuration browser
   (;; This is for Nyxt to never prompt me about restoring the previous session.
@@ -89,9 +96,6 @@ it takes a list of configurations
       '((body
          :background-color "black"
          :color "white")))))))
-
-(defmethod customize-instance ((buffer buffer) &key)
-  (nyxt/emacs-mode:emacs-mode :buffer buffer))
 
 ;;; Dark is a simple mode for simple HTML pages to color those in a
 ;;; darker palette. I don't like the default gray-ish colors,
@@ -198,3 +202,9 @@ A poor man's hsplit :)"
                 :background-image "none !important"))))))
 
 (asdf:load-system :hermes)
+;; https://github.com/aartaka/nx-dark-reader
+(asdf:load-system :nx-dark-reader)
+(define-configuration web-buffer
+  ((default-modes `(nyxt/emacs-mode:emacs-mode
+                    nx-dark-reader:dark-reader-mode
+                    ,@%slot-default%))))
