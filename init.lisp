@@ -77,7 +77,6 @@ it takes a list of configurations
 
 (define-configuration browser
   (;; This is for Nyxt to never prompt me about restoring the previous session.
-   (session-restore-prompt :never-restore)
    (autofills (list (make-autofill :name "First Name" :fill "Gavin")
                     (make-autofill :name "Last Name" :fill "Jaeger-Freebron")
                     (make-autofill :name "Name" :fill "Gavin Jaeger-Freebron")
@@ -116,19 +115,20 @@ it takes a list of configurations
 ;;;; SLY setup
 (ql:quickload :slynk)
 (define-command-global start-slynk (&optional (slynk-port slynk::default-server-port))
-  "Start a Slynk server that can be connected to, for instance, in
-Emacs via SLY.
+  "Start a Slynk server that can be connected to, for instance, in Emacs
+via SLY.
 
-Warning: This allows Nyxt to be controlled remotely, that is, to execute
-arbitrary code with the privileges of the user running Nyxt.  Make sure
-you understand the security risks associated with this before running
-this command."
+Warning: This allows Nyxt to be controlled remotely, that is, to
+execute arbitrary code with the privileges of the user running Nyxt.
+Make sure you understand the security risks associated with this
+before running this command."
   (slynk:create-server :port slynk-port :dont-close t)
   (echo "Slynk server started at port ~a" slynk-port))
 
 ;; taken from https://github.com/aartaka/nyxt-config/blob/master/commands.lisp
 (define-command-global eval-expression ()
-  "Prompt for the expression and evaluate it, echoing result to the `message-area'."
+  "Prompt for the expression and evaluate it, echoing result to the
+`message-area'."
   (let ((expression-string
          ;; Read an arbitrary expression. No error checking, though.
          (first (prompt :prompt "Expression to evaluate"
@@ -154,42 +154,16 @@ the given BUFFER's current url."
 (define-configuration browser
   ((session-restore-prompt :always-restore)
    (nyxt/web-mode:hints-alphabet "DSJKHLFAGNMXCWEIO")
-   (theme (make-instance
-           'theme:theme
-           :dark-p t
-           :background-color "#000000"
-           :text-color "#CDCDCD"
-           :accent-color "#7D8FA3"
-           :primary-color "#7D8FA3"
-           :secondary-color "#8fafd7"
-           :tertiary-color "#7D8FA3"
-           :quaternary-color "#000000"))))
-
-#+nyxt-3
-(nyxt::define-panel-global hsplit (&key (buffer (id (current-buffer))))
-                           (panel "Duplicate panel" :right)
-                           "Duplicate the current buffer URL in the panel buffer on the right.
-A poor man's hsplit :)"
-                           (progn
-                             (ffi-window-set-panel-buffer-width (current-window) panel 750)
-                             (run-thread "URL loader"
-                                         (buffer-load (url (nyxt::buffers-get buffer)) :buffer panel))
-                             ""))
-
-#+nyxt-3
-(define-command-global close-all-panels ()
-  "Close all the panel buffers there are."
-  (when (panel-buffers-right (current-window))
-    (delete-panel-buffer :window (current-window) :panels (panel-buffers-right (current-window))))
-  (when (panel-buffers-left (current-window))
-    (delete-panel-buffer :window (current-window) :panels (panel-buffers-left (current-window)))))
-
-#+nyxt-3
-(define-command-global hsplit ()
-  "Based on `hsplit-panel' above."
-  (if (panel-buffers-right (current-window))
-      (close-all-panels)
-    (hsplit-panel)))
+    (theme (make-instance
+            'theme:theme
+            :dark-p t
+            :background-color "#000000"
+            :text-color "#CDCDCD"
+            :accent-color "#85A7A5"
+            :primary-color "#7D8FA3"
+            :secondary-color "#8fafd7"
+            :tertiary-color "#7D8FA3"
+            :quaternary-color "#000000"))))
 
 (define-configuration nyxt/style-mode:dark-mode
   ((style #.(cl-css:css
