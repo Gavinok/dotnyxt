@@ -41,17 +41,16 @@ it takes a list of configurations
        "C-c u"    'copy-username
        "C-c p"    'copy-password
        "C-c y"    'autofill
-       "C-f"      'nyxt/web-mode:history-forwards-maybe-query
-       "C-i"      'nyxt/input-edit-mode:input-edit-mode
        "M-:"      'eval-expression
-       "M-s M-l"  'search-buffer
-       "M-s M-L"  'search-buffers
+       "M-s M-l"  'nyxt/web-mode:search-buffer
+       "M-s M-L"  'nyxt/web-mode:search-buffers
        "M-x"      'execute-command
        "M-g M-v"  'hint-mpv
        "M-V"      'youtube-play-current-page
-       "C-c l"    'org-protocal
+       "C-c l"    'org-protocol
+       "C-c c"    'org-capture
        "C-x M-s"  'start-slynk
-       "M-`"      'hsplit
+       "C-i"      'nyxt/input-edit-mode:input-edit-mode
        "C-w"      'nyxt/input-edit-mode:delete-backwards-word
        "C-f"      'nyxt/input-edit-mode:cursor-forwards
        "C-b"      'nyxt/input-edit-mode:cursor-backwards
@@ -136,18 +135,67 @@ before running this command."
     ;; Message the evaluation result to the message-area down below.
     (echo "~S" (eval (read-from-string expression-string)))))
 
-;; TODO add support for the "capture" protocol which requires the current selection
-(define-command-global org-protocal (&optional (protocol "store-link") (buffer (nyxt:current-buffer)))
-  "Using the supported org-protocol type PROTOCOL execute it against
-the given BUFFER's current url."
+(defun eval-elisp-helper (elisp)
+  "Evaluate ELISP in the current thread. If it can not be completed
+within 5minutes fail."
+  (read-from-string (uiop:run-program
+                     (list "timeout" "--signal=9" "5m" "emacsclient" "--eval" elisp)
+                     :output :string)))
+
+(defmacro eval-elisp (elisp)
+  "Convert ELISP into lowercase string and send it to be processed by
+Emacs."
+  `(eval-elisp-helper ,(write-to-string elisp
+                                        :case :downcase)))
+
+(defun get-org-templates ()
+  (read-from-string (uiop:run-program
+                     (list "timeout" "--signal=9" "5m" "emacsclient" "--eval"
+                           "org-capture-templates")
+                     :output :string)))
+
+(defun template-description (template)
+  (make-instance 'prompter:suggestion
+                 :value (first template)
+                 :attributes `(("Key" ,(first template))
+                               ("Description" ,(second template))
+                               ("Template" ,(car (last template))))))
+
+
+(defun make-org-template-source ()
+  "Create a prompt source based on the currently running emacs's
+org-templates"
+  (make-instance 'prompter:source
+                 :name "Emacs Capture Templates"
+                 :constructor (mapcar #'template-description
+                                      ;; Ensure that we are not listing prefix keys
+                                      ;; e.g. m in the me
+                                      (remove-if-not #'cddr (get-org-templates)))))
+
+(define-command-global org-capture (&optional (buffer (nyxt:current-buffer)))
+  "Call org-protocol whith the type of capture using the BUFFER for
+context."
+  (org-protocol "capture" buffer))
+
+(define-command-global org-protocol
+    (&optional (protocol "store-link") (buffer (nyxt:current-buffer)))
+  "Using the supported org-protocol type PROTOCOL execute it against the
+given BUFFER's current url."
   (let ((url (render-url (nyxt:url buffer)))
-        (title (title buffer)))
-    (uiop:launch-program (list nyxt:*open-program*
-                               (str:concat "org-protocol://" protocol "?"
-                                           "url=" url
-                                           "&title=" title
-                                           ;; "&body=""$QUTE_SELECTED_TEXT"
-                                           )))))
+        (title (title buffer))
+        (body (quri:url-encode (%copy)))
+        (protocol-str (format nil "org-protocol://~a?" protocol))
+        (capture-template (when (equal protocol "capture")
+                            (format nil "template=~a&"
+                                    (first (prompt :prompt "Select a capture template"
+                                                   :sources (list (make-org-template-source))))))))
+    (uiop:launch-program (list "emacsclient"
+                               ;; nyxt:*open-program* would also be an alternative
+                               (str:concat
+                                protocol-str
+                                capture-template
+                                (format nil "url=~a&title=~a&body=~a"
+                                        url title body))))))
 
 (setf (uiop:getenv "GTK_THEME") "Adwaita:dark")
 
